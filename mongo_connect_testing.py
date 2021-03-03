@@ -1,6 +1,8 @@
 import MongodbDAO
 import psycopg2
 
+#Dit bericht moet allleen te zien zijn op d-branch
+
 #connect to the db
 con = psycopg2.connect('host=localhost dbname=huwebshop user=postgres password=Levidov123')
 
@@ -36,7 +38,7 @@ for profile in profiles:
 				try:
 					cur.execute("INSERT INTO profile (_id, ordercount) VALUES (%s, %s)", (id, profile["order"]["count"]))
 				except Exception as e:
-					print(counter, e)	
+					print(counter, e)
 
 		else:
 			if "recommendations" in profile.keys():
@@ -109,5 +111,3 @@ cur.close()
 # 			counter += 1
 # 	except KeyError:
 # 		continue
-
-
