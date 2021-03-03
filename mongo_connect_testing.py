@@ -1,5 +1,6 @@
 import MongodbDAO
 import psycopg2
+#groetjes dennis
 
 #connect to the db
 con = psycopg2.connect('host=localhost dbname=huwebshop user=postgres password=zohra80')
