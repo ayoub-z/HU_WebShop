@@ -18,50 +18,36 @@ cur = con.cursor()
 products = MongodbDAO.getDocuments("products")
 profiles = MongodbDAO.getDocuments("profiles")
 #products is een Cursor
-allcounter = 0
-orderonlycounter=0
-segmentonlycounter=0
-counter=0
-ordersegmentfailurecounter = 0
-orderfailurecounter = 0
-segmentfailurecounter = 0
-elsefailurecounter = 0
-
-
 
 for profile in profiles:
-	counter+=1
 	id = str(profile["_id"])
 	if "order" in profile.keys():
-		if "recommendations" in profile.keys():
-			try:
-				allcounter+=1
-				cur.execute("INSERT INTO profile (_id, ordercount, segment) VALUES (%s, %s, %s)", (id, profile["order"]["count"], profile["recommendations"]["segment"]))
-			except Exception as e:
-				ordersegmentfailurecounter+=1
-				print(counter, id, e)
+		if "count" in profile["order"].keys():
+			if "recommendations" in profile.keys():
+				try:
+					cur.execute("INSERT INTO profile (_id, ordercount, segment) VALUES (%s, %s, %s)", (id, profile["order"]["count"], profile["recommendations"]["segment"]))
+				except Exception as e:
+					print(id, e)
+			else:
+				try:
+					cur.execute("INSERT INTO profile (_id, ordercount) VALUES (%s, %s)", (id, profile["order"]["count"]))
+				except Exception as e:
+					print(id, e)
 		else:
-			try:
-				orderonlycounter +=1
-				cur.execute("INSERT INTO profile (_id, ordercount) VALUES (%s, %s)", (id, profile["order"]["count"]))
-			except Exception as e:
-				orderfailurecounter+=1
-				print(counter, id, e)
+			if "recommendations" in profile.keys():
+				try:
+					cur.execute("INSERT INTO profile (_id, segment) VALUES (%s, %s)",
+								(id, profile["recommendations"]["segment"]))
+				except Exception as e:
+					print(id, e)
+			else:
+				continue
 
-	else:
-		if "recommendations" in profile.keys():
-			try:
-				segmentonlycounter+=1
-				cur.execute("INSERT INTO profile (_id, segment) VALUES (%s, %s)", (id, profile["recommendations"]["segment"]))
-			except Exception as e:
-				segmentfailurecounter+=1
-				print(counter, id, e)
-		else:
-			elsefailurecounter+=1
-			continue
-print(f'Done! Segment+order entries: {allcounter}, order only entries: {orderonlycounter}, segment only counter: {segmentonlycounter}')
-print(f'Failures: segment+order{ordersegmentfailurecounter}, order:{orderfailurecounter}, segment: {segmentfailurecounter}, else: {elsefailurecounter}')
+
+con.commit()
+
 cur.close()
+con.close()
 
 
 
