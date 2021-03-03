@@ -1,6 +1,6 @@
 import MongodbDAO
 import psycopg2
-
+#dit is levibranch bitch
 #connect to the db
 con = psycopg2.connect('host=localhost dbname=huwebshop user=postgres password=Levidov123')
 
@@ -24,7 +24,7 @@ for profile in profiles:
 	counter+=1
 	if counter < 100:
 		id = str(profile["_id"])
-		# id = str(profileID)
+
 		if "order" in profile.keys():
 			if "recommendations" in profile.keys():
 				try:
@@ -45,8 +45,9 @@ for profile in profiles:
 				except Exception as e:
 					print(counter, e)
 			else:
+
 				try:
-					cur.execute("INSERT INTO profile (_id) VALUES (%s)", (id))
+					cur.execute("INSERT INTO profile (_id) VALUES (%s)", id)
 				except Exception as e:
 					print(counter, e, id)
 	else:
