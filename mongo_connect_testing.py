@@ -1,6 +1,7 @@
 import MongodbDAO
 import psycopg2
 
+#groet Ayoub
 #connect to the db
 con = psycopg2.connect('host=localhost dbname=huwebshop user=postgres password=Levidov123')
 
@@ -56,58 +57,5 @@ for profile in profiles:
 		break
 cur.close()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# for product in products:
-# 	if counter < 3:
-# 		print('Category:',product['category'])
-# 		print('Gender:',product['gender'])
-# 		print('Fast Mover:',product['fast_mover'])
-# 		print('Selling Price:',product['price']['selling_price'])
-# 		print('Doelgroep:',product['properties']['doelgroep'])
-# 		counter += 1
-# 		print('\n')
-# 	else:
-# 		print('done!')
-# 		break
-
-
-
-# prijzen = 0
-# counter = 0
-
-# for product in products:
-# 	try:
-# 		if type(product['price']['selling_price']) == int and product['price']['selling_price'] > 0:
-# 			prijzen += product['price']['selling_price']
-# 			counter += 1
-# 	except KeyError:
-# 		continue
 
 
