@@ -6,9 +6,9 @@ con = psycopg2.connect('host=localhost dbname=hu_webshop user=postgres password=
 
 # informatie tonen over wat data
 db = MongodbDAO.getMongoDB()
-collectionsNames = db.list_collection_names()
+collectionsNames = db.list_collection_names(no_cursor_timeout=True)
 for collectionName in collectionsNames:
-	collection = db.get_collection(collectionName,)
+	collection = db.get_collection(collectionName)
 
 
 #cursor
@@ -16,7 +16,8 @@ cur = con.cursor()
 
 #zoeken
 products = MongodbDAO.getDocuments("products")
-profiles = MongodbDAO.getDocuments("profiles")
+profiles = MongodbDAO.getDocuments("profiles").batch_size(5)
+
 sessions = MongodbDAO.getDocuments("sessions")
 
 
