@@ -65,7 +65,7 @@ def buidtablebuilder():
 	cur.execute("select _id from profile")
 	data = cur.fetchall()
 	usable__profile_id_list = []
-	count = 0
+	count = 1
 	for entry in data:
 		usable__profile_id_list.append(entry[0])
 	for profile in profiles:
@@ -74,11 +74,13 @@ def buidtablebuilder():
 			if "buids" in profile.keys():
 				for buids in profile["buids"]:
 					if count%10000==0:
+
 						con.commit()
 						print("Commit happened")
 
 					try:
 						cur.execute("INSERT INTO buid (_buid, profile_id) VALUES (%s, %s)",(buids, id))
+						count+=1
 					except:
 						print(f'dr is iets kapot {buids}, {id}')
 
