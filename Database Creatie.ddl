@@ -1,3 +1,24 @@
+--DROP TABLES
+ALTER TABLE "session" DROP CONSTRAINT FKsession585004;
+ALTER TABLE buid DROP CONSTRAINT FKbuid933374;
+ALTER TABLE "order" DROP CONSTRAINT FKorder25500;
+ALTER TABLE viewed_before DROP CONSTRAINT FKviewed_bef518020;
+ALTER TABLE viewed_before DROP CONSTRAINT FKviewed_bef890147;
+ALTER TABLE previously_recommended DROP CONSTRAINT FKpreviously773426;
+ALTER TABLE previously_recommended DROP CONSTRAINT FKpreviously826036;
+ALTER TABLE product_order DROP CONSTRAINT FKproduct_or52075;
+ALTER TABLE product_order DROP CONSTRAINT FKproduct_or544660;
+DROP TABLE IF EXISTS buid CASCADE;
+DROP TABLE IF EXISTS "order" CASCADE;
+DROP TABLE IF EXISTS previously_recommended CASCADE;
+DROP TABLE IF EXISTS product CASCADE;
+DROP TABLE IF EXISTS product_order CASCADE;
+DROP TABLE IF EXISTS profile CASCADE;
+DROP TABLE IF EXISTS "session" CASCADE;
+DROP TABLE IF EXISTS viewed_before CASCADE;
+
+
+--CREATE TABLES
 CREATE TABLE buid (
   _buid      varchar(255) NOT NULL, 
   profile_id varchar(255) NOT NULL, 
@@ -14,7 +35,7 @@ CREATE TABLE product (
   name                 varchar(255) NOT NULL,
   brand                varchar(255),
   category             varchar(255),
-  description          varchar(255),
+  description          varchar(10000),
   fast_mover           bool NOT NULL,
   herhaalaankopen      bool NOT NULL,
   selling_price        int4 NOT NULL,
