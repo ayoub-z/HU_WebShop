@@ -6,7 +6,7 @@ con = psycopg2.connect('host=localhost dbname=hu_webshop user=postgres password=
 
 # informatie tonen over wat data
 db = MongodbDAO.getMongoDB()
-collectionsNames = db.list_collection_names(no_cursor_timeout=True)
+collectionsNames = db.list_collection_names()
 for collectionName in collectionsNames:
 	collection = db.get_collection(collectionName,)
 
@@ -65,7 +65,7 @@ def buidtablebuilder():
 	cur.execute("select _id from profile")
 	data = cur.fetchall()
 	usable__profile_id_list = []
-
+	count = 0
 	for entry in data:
 		usable__profile_id_list.append(entry[0])
 	for profile in profiles:
@@ -73,7 +73,10 @@ def buidtablebuilder():
 		if id in usable__profile_id_list:
 			if "buids" in profile.keys():
 				for buids in profile["buids"]:
-					print(f'id: {id}  buid: {buids}')
+					if count%10000==0:
+						con.commit()
+						print("Commit happened")
+
 					try:
 						cur.execute("INSERT INTO buid (_buid, profile_id) VALUES (%s, %s)",(buids, id))
 					except:
