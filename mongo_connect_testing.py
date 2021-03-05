@@ -18,6 +18,8 @@ products = MongodbDAO.getDocuments("products")
 profiles = MongodbDAO.getDocuments("profiles")
 sessions = MongodbDAO.getDocuments("sessions")
 
+
+
 def profile_converter():
 	'''This function converts a mongoDB profile entry into an SQL Profile table entry
 	it checks which information is available and inserts it correspondingly
@@ -57,6 +59,7 @@ def profile_converter():
 					print(id, e)
 			else:
 				continue
+
 
 
 def product_converter():
@@ -154,6 +157,8 @@ def product_converter():
 		(product_id, name, brand, category, description, fast_mover, herhaalaankopen, selling_price, doelgroep, sub_category,
 		sub_sub_category, sub_sub_sub_category))
 
+
+
 def previously_recommended_filler():
 	'''
 	This function fills the previous_recommended table in SQL with values from mongoDB
@@ -199,6 +204,7 @@ def previously_recommended_filler():
 	cur.close()
 	con.close()
 	print(f'done! skipped:{skipcounter}, inserted: {insertcounter}, sql errors: {sqlerrorcounter}')
+
 
 
 def viewed_before_filler():
@@ -249,6 +255,8 @@ def viewed_before_filler():
 	con.close()
 	print(f'done! skipped:{skipcounter}, inserted: {insertcounter}, sql errors: {sqlerrorcounter}')
 
+
+
 def buid_table_filler():
 	'''
 	This function converts a mongoDB profile entry into an SQL Buid table entry
@@ -289,6 +297,7 @@ def buid_table_filler():
 		except KeyError:
 			print('geen BUIDS')
 			continue
+
 
 
 def session_filler():
@@ -353,7 +362,6 @@ def session_filler():
 
 
 
-
 def order_filler():
 	'''
 	This function converts the mongoDB session entry 'order' into the SQL 'order' table 
@@ -362,7 +370,7 @@ def order_filler():
 	'''
 	# counters
 	orderidcounter = 1 # keeps track of orders that aren't empty
-					   # it's also used as reference for the orderid
+					# it's also used as reference for the orderid
 	unique_exceptionError_counter = 0
 	ForeignKey_exceptionError_counter = 0
 	buid_Exception_counter = 0
@@ -407,6 +415,8 @@ def order_filler():
 			con.rollback()
 	print(f'Done! We inserted {orderidcounter} documents, got unique exception: {unique_exceptionError_counter} times')
 	print(f'Got foreign key error {ForeignKey_exceptionError_counter} times, Too long buid error: {buid_Exception_counter} times, and failed {failed_sql_counter} sql queries.')
+
+
 
 def product_order_filler():
 	'''
