@@ -241,3 +241,46 @@ def viewed_before_filler():
 	cur.close()
 	con.close()
 	print(f'done! skipped:{skipcounter}, inserted: {insertcounter}, sql errors: {sqlerrorcounter}')
+
+def buidtablebuilder():
+    '''This function converts a mongoDB profile entry into an SQL Profile table entry
+		it checks which information is available and inserts it correspondingly
+		Written by: Dennis Besselsen'''
+
+    # Hier wordt een filter toegepast op de mongoDB. De enige nuttige informatie voor deze functie is '_id' en 'buids'
+    filterid = {"_id": 1, "buids":1}
+    profileids = MongodbDAO.getCollection("profiles").find({}, filterid, no_cursor_timeout=True)
+
+    # Alle Profiles uit SQL worden ingeladen en in een lijst van strings geplaatst
+    cur.execute("select _id from profile")
+    data = cur.fetchall()
+    usable_profile_id_list = []
+    for entry in data:
+        usable_profile_id_list.append(entry[0])
+
+    count = 0            # lelijke counter voor het beihouden van aantal succesvolle commits
+
+    #voor elk profiel geladen uit Mongo word gekeken of deze al gebruikt is in de SQL profile table. Zo ja, check of deze een buid heeft, zo ja insert en commit deze informatie 1 voor 1.
+    for profile in profileids:
+        id = str(profile["_id"])
+        try:
+            if "buids" in profile.keys():
+                for buid in profile["buids"]:
+                    try:
+                        cur.execute("INSERT INTO buid (_buid, profile_id) VALUES (%s, %s)", (buid, id))
+                        con.commit()
+                        count += 1
+                        print(count)
+                    except psycopg2.errors.UniqueViolation:  # exception die de duplicate Buids omzeilt.
+                        print(f'Exception used on {id}, {buid}')
+                        con.rollback()
+                    except psycopg2.errors.ForeignKeyViolation:
+                        print('Profile ID does not exist. skipping')
+                        con.rollback()
+        except KeyError:
+            print('geen BUIDS')
+            continue
+
+
+cur.close()
+con.close()
