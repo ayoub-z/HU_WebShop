@@ -282,5 +282,167 @@ def buid_table_filler():
             continue
 
 
-cur.close()
-con.close()
+def session_filler():
+
+	insert_counter = 0
+	unique_exceptionError_counter = 0
+	ForeignKey_exceptionError_counter = 0
+	buid_Exception_counter = 0
+	failed_sql_counter= 0
+
+
+
+	for session in sessions:
+
+		try:
+			session_id = str(session["_id"])
+		except:
+			print('geen id')
+
+		try:
+			session_buid = str(session["buid"])
+		except:
+			print("Session buid invalid")
+
+		try:
+			sale = session["has_sale"]
+		except:
+			print("Geen sale")
+
+		try:
+			order = session["order"]
+			if order == None:
+				continue
+		except:
+			print(f'Geen order')
+
+		try:
+			cur.execute('INSERT INTO "session" (_id, buid_buid, has_sale) VALUES (%s, %s, %s)',
+						(session_id, session_buid, sale))
+			insert_counter += 1
+			print(insert_counter)
+			con.commit()
+		except psycopg2.errors.UniqueViolation:
+			unique_exceptionError_counter += 1
+			print(f'{unique_exceptionError_counter} Exception used on {session_id}, {session_buid}')
+			con.rollback()
+		except psycopg2.errors.ForeignKeyViolation:
+			ForeignKey_exceptionError_counter += 1
+			print('Buid does not exist. skipping', ForeignKey_exceptionError_counter)
+			con.rollback()
+		except psycopg2.errors.StringDataRightTruncation:
+			buid_Exception_counter += 1
+			con.rollback()
+		except psycopg2.errors.InFailedSqlTransaction:
+			failed_sql_counter += 1
+			con.rollback()
+	print(f'Done! We inserted {insert_counter} documents, got unique exception: {unique_exceptionError_counter} times')
+	print(f'Got foreign key error {ForeignKey_exceptionError_counter} times, Too long buid error: {buid_Exception_counter} times, and failed {failed_sql_counter} sql queries.')
+def order_filler():
+
+	orderidcounter = 1
+	unique_exceptionError_counter = 0
+	ForeignKey_exceptionError_counter = 0
+	buid_Exception_counter = 0
+	failed_sql_counter= 0
+
+	for session in sessions:
+
+		if "order" not in session.keys():
+			continue
+
+		try:
+			session_id = str(session["_id"])
+		except:
+			print('geen id')
+
+		try:
+			order = session["order"]
+			if order == None:
+				continue
+		except:
+			print(f'Geen order')
+
+		try:
+			print(f'inserting: {orderidcounter} and session id: {session_id}')
+			orderidcounter += 1
+			cur.execute('INSERT INTO "order" (orderid, session_id) VALUES (%s, %s)',
+						(orderidcounter, session_id))
+			con.commit()
+		except psycopg2.errors.UniqueViolation:
+			unique_exceptionError_counter += 1
+			con.rollback()
+		except psycopg2.errors.ForeignKeyViolation:
+			ForeignKey_exceptionError_counter += 1
+			print('Buid does not exist. skipping', ForeignKey_exceptionError_counter)
+			con.rollback()
+		except psycopg2.errors.StringDataRightTruncation:
+			buid_Exception_counter += 1
+			con.rollback()
+		except psycopg2.errors.InFailedSqlTransaction:
+			failed_sql_counter += 1
+			con.rollback()
+	print(f'Done! We inserted {orderidcounter} documents, got unique exception: {unique_exceptionError_counter} times')
+	print(f'Got foreign key error {ForeignKey_exceptionError_counter} times, Too long buid error: {buid_Exception_counter} times, and failed {failed_sql_counter} sql queries.')
+
+def product_order_filler():
+	'''This function fills the viewed_before table in SQL with values from mongoDB
+		Written by: Levi Verhoef'''
+
+	# get documents, filtered by id and recommendations
+	# we do this filter because this function already takes a long time to run so small optimisations are good
+
+	# a few counters
+	skipcounter = 0
+	insertcounter = 0
+	sqlerrorcounter = 0
+	product_order_id_counter = 1
+
+	# loop through all the profiles
+	for session in sessions:
+
+		try:
+			session_id = str(session["_id"])
+		except:
+			print('geen id')
+
+		try:
+			order = session["order"]
+			if order == None:
+				continue
+		except:
+			print(f'Geen order')
+
+		selectquery = 'SELECT orderid FROM "order" where session_id = %s'
+		try:
+			cur.execute(selectquery, (session_id,))
+			orderselection = cur.fetchone()
+		except:
+			print(f'hier komen we een sql transactie error tegen, skip')
+			sqlerrorcounter += 1
+			con.rollback()  # this rolls back the transaction and makes sure on the next commit we
+			continue
+
+		try:
+			for product_id in session["order"]["products"]:
+				try:
+					print(f'inserting product_order_id:{product_order_id_counter} order_id: {orderselection[0]} and productid: {product_id["id"]} ')
+					cur.execute(
+						"INSERT INTO product_order (product_order_id, product_id, orderorderid) VALUES (%s, %s, %s)",
+						(product_order_id_counter, product_id["id"], orderselection[0]))
+					con.commit()
+					product_order_id_counter += 1
+					insertcounter += 1  # keep track of succesful inserts
+				except psycopg2.errors.ForeignKeyViolation:  # if we find a product id thats not in our product table, skip
+					print(f'product id:{product_id["id"]} niet nuttig, skip')
+					skipcounter += 1
+					continue
+				except psycopg2.errors.InFailedSqlTransaction:  # sometimes SQL transactions fail, count them
+					print(f'hier komen we een sql transactie error tegen, skip')
+					sqlerrorcounter += 1
+					con.rollback()  # this rolls back the transaction and makes sure on the next commit we
+									#wont try to commit the faulty transaction again.
+
+		except KeyError:
+			print('geen order')
+	print(f'Done! we inserted {insertcounter} product/orders, we skipped {skipcounter} items, we got {sqlerrorcounter} sql errors. All good!')
