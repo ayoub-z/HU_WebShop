@@ -31,18 +31,10 @@ product_order = product_order_filler
 The recommended order of calling these functions is:
 
 1. profile_converter (takes 10-20 minutes) 
-2. 
-3. product_converter (takes 1-2 minutes)
-4. 
-5. previously_recommended (takes about 15-20 minutes)
-6. 
-7. viewed_before (takes about 30-50 minutes, ~8.4 million entries)
-8. 
-9. buid_table_filler (takes about 20-40 minutes)
-10. 
-11. session_filler (takes about 15-20 minutes)
-12. 
-13. order_filler (takes about ??-?? minutes)
-14. 
-15. product_order_filler (takes about ??-?? minutes)
-16. 
+2. product_converter (takes 1-2 minutes)
+3. previously_recommended (takes about 15-20 minutes)
+4. viewed_before (takes about 30-50 minutes, ~8.4 million entries)
+5. buid_table_filler (takes about 20-40 minutes)
+6. session_filler (takes about 15-20 minutes)
+7. order_filler (takes about ??-?? minutes)
+8. product_order_filler (takes about ??-?? minutes)
