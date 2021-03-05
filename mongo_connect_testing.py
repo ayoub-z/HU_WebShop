@@ -21,7 +21,8 @@ sessions = MongodbDAO.getDocuments("sessions")
 def profile_converter():
 	'''This function converts a mongoDB profile entry into an SQL Profile table entry
 		it checks which information is available and inserts it correspondingly
-		it also prints a teringbende'''
+		it also prints a teringbende
+		Written by: Levi Verhoef'''
 	for profile in profiles:
 		print(profile)
 		id = str(profile["_id"])
@@ -57,9 +58,10 @@ def profile_converter():
 				continue
 
 
-def productconverter():
+def product_converter():
 	'''this converter converts the MongoDB Product document into a table
-	in postgreSQL'''
+	in postgreSQL
+	Written by: Levi Verhoef'''
 
 	skipcounter =0
 
@@ -150,9 +152,13 @@ def productconverter():
 		 sub_sub_category, sub_sub_sub_category))
 
 def previously_recommended_filler():
-	'''This function fills the previous_recommended table in SQL with values from mongoDB '''
+	'''This function fills the previous_recommended table in SQL with values from mongoDB
+	Prerequisite to running this function is having filled the profile and product table
+	with product_converter and profile_converter
+	Written by: Levi Verhoef'''
 
 	# get documents, filtered by id and previously_recommended
+	# we do this filter because this function already takes a long time so small optimisations are good
 	filterprev = {"_id":1, "previously_recommended":1}
 	profiles_with_prev = MongodbDAO.getCollection("profiles").find({}, filterprev, no_cursor_timeout=True)
 
@@ -191,9 +197,11 @@ def previously_recommended_filler():
 
 
 def viewed_before_filler():
-	'''This function fills the viewed_before table in SQL with values from mongoDB'''
+	'''This function fills the viewed_before table in SQL with values from mongoDB
+	Written by: Levi Verhoef'''
 
 	#get documents, filtered by id and recommendations
+	# we do this filter because this function already takes a long time to run so small optimisations are good
 	filterprev = {"_id": 1, "recommendations":1}
 	profiles_with_recommendations = MongodbDAO.getCollection("profiles").find({}, filterprev, no_cursor_timeout=True)
 
