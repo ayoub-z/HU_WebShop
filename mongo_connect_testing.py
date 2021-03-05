@@ -242,7 +242,7 @@ def viewed_before_filler():
 	con.close()
 	print(f'done! skipped:{skipcounter}, inserted: {insertcounter}, sql errors: {sqlerrorcounter}')
 
-def buidtablebuilder():
+def buid_table_filler():
     '''This function converts a mongoDB profile entry into an SQL Profile table entry
 		it checks which information is available and inserts it correspondingly
 		Written by: Dennis Besselsen'''
