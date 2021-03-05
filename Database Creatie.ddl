@@ -18,6 +18,7 @@ DROP TABLE IF EXISTS "session" CASCADE;
 DROP TABLE IF EXISTS viewed_before CASCADE;
 
 
+
 --CREATE TABLES
 CREATE TABLE buid (
   _buid      varchar(255) NOT NULL, 
@@ -28,8 +29,10 @@ CREATE TABLE "order" (
   session_id varchar(50) NOT NULL, 
   PRIMARY KEY (orderid));
 CREATE TABLE previously_recommended (
-  profile_id varchar(255) NOT NULL, 
-  product_id varchar(255) NOT NULL);
+  previously_recommended_id SERIAL NOT NULL,
+  profile_id                varchar(255) NOT NULL,
+  product_id                varchar(255) NOT NULL,
+  PRIMARY KEY (previously_recommended_id));
 CREATE TABLE product (
   _id                  varchar(255) NOT NULL,
   name                 varchar(255) NOT NULL,
@@ -45,10 +48,10 @@ CREATE TABLE product (
   sub_sub_sub_category varchar(255),
   PRIMARY KEY (_id));
 CREATE TABLE product_order (
-  product_id   varchar(255) NOT NULL,
-  orderorderid int4 NOT NULL,
-  PRIMARY KEY (product_id,
-  orderorderid));
+  product_order_id SERIAL NOT NULL,
+  product_id       varchar(255) NOT NULL,
+  orderorderid     int4 NOT NULL,
+  PRIMARY KEY (product_order_id));
 CREATE TABLE profile (
   _id        varchar(255) NOT NULL,
   ordercount int4,
@@ -60,8 +63,10 @@ CREATE TABLE "session" (
   has_sale  bool NOT NULL,
   PRIMARY KEY (_id));
 CREATE TABLE viewed_before (
-  product_id varchar(255) NOT NULL,
-  profile_id varchar(255) NOT NULL);
+  viewed_before_id SERIAL NOT NULL,
+  product_id       varchar(255) NOT NULL,
+  profile_id       varchar(255) NOT NULL,
+  PRIMARY KEY (viewed_before_id));
 ALTER TABLE "session" ADD CONSTRAINT FKsession585004 FOREIGN KEY (buid_buid) REFERENCES buid (_buid);
 ALTER TABLE buid ADD CONSTRAINT FKbuid933374 FOREIGN KEY (profile_id) REFERENCES profile (_id);
 ALTER TABLE "order" ADD CONSTRAINT FKorder25500 FOREIGN KEY (session_id) REFERENCES "session" (_id);
@@ -71,3 +76,4 @@ ALTER TABLE previously_recommended ADD CONSTRAINT FKpreviously773426 FOREIGN KEY
 ALTER TABLE previously_recommended ADD CONSTRAINT FKpreviously826036 FOREIGN KEY (product_id) REFERENCES product (_id);
 ALTER TABLE product_order ADD CONSTRAINT FKproduct_or52075 FOREIGN KEY (product_id) REFERENCES product (_id);
 ALTER TABLE product_order ADD CONSTRAINT FKproduct_or544660 FOREIGN KEY (orderorderid) REFERENCES "order" (orderid);
+
