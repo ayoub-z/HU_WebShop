@@ -1,4 +1,7 @@
 # HU_WebShop
+By Dennis Besselsen, Levi Verhoef and Ayoub Zouin
+
+
 This is a project we did for Hogeschool Utrecht HBO-ICT. We had to convert a mongodb document store into an SQL relational database.
 To do this, we designed a database model and then wrote python functions to fill tables. 
 Make sure to edit your database connection details to fit your database.
