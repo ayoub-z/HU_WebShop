@@ -26,7 +26,7 @@ session - session_filler
 
 order - order_filler
 
-product_order = product_order_filler
+product_order - product_order_filler
 
 The recommended order of calling these functions is:
 
