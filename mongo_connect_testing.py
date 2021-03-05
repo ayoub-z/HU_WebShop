@@ -2,7 +2,7 @@ import MongodbDAO
 import psycopg2
 
 #connect to the db
-con = psycopg2.connect('host=localhost dbname=huwebshop user=postgres password=Levidov123')
+con = psycopg2.connect('host=localhost dbname=huwebshop user=postgres password=12345')
 
 # informatie tonen over wat data
 db = MongodbDAO.getMongoDB()
@@ -18,11 +18,14 @@ products = MongodbDAO.getDocuments("products")
 profiles = MongodbDAO.getDocuments("profiles")
 sessions = MongodbDAO.getDocuments("sessions")
 
+
+
 def profile_converter():
 	'''This function converts a mongoDB profile entry into an SQL Profile table entry
-		it checks which information is available and inserts it correspondingly
-		it also prints a teringbende
-		Written by: Levi Verhoef'''
+	it checks which information is available and inserts it correspondingly
+	it also prints a teringbende
+	Written by: Levi Verhoef
+	'''
 	for profile in profiles:
 		print(profile)
 		id = str(profile["_id"])
@@ -58,10 +61,13 @@ def profile_converter():
 				continue
 
 
+
 def product_converter():
-	'''this converter converts the MongoDB Product document into a table
+	'''
+	This converter converts the MongoDB Product document into a table
 	in postgreSQL
-	Written by: Levi Verhoef'''
+	Written by: Levi Verhoef
+	'''
 
 	skipcounter =0
 
@@ -149,13 +155,17 @@ def product_converter():
 		cur.execute(
 			"INSERT INTO product (_id, name, brand, category, description, fast_mover, herhaalaankopen, selling_price, doelgroep, sub_category, sub_sub_category, sub_sub_sub_category) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
 		(product_id, name, brand, category, description, fast_mover, herhaalaankopen, selling_price, doelgroep, sub_category,
-		 sub_sub_category, sub_sub_sub_category))
+		sub_sub_category, sub_sub_sub_category))
+
+
 
 def previously_recommended_filler():
-	'''This function fills the previous_recommended table in SQL with values from mongoDB
+	'''
+	This function fills the previous_recommended table in SQL with values from mongoDB
 	Prerequisite to running this function is having filled the profile and product table
 	with product_converter and profile_converter
-	Written by: Levi Verhoef'''
+	Written by: Levi Verhoef
+	'''
 
 	# get documents, filtered by id and previously_recommended
 	# we do this filter because this function already takes a long time so small optimisations are good
@@ -196,9 +206,12 @@ def previously_recommended_filler():
 	print(f'done! skipped:{skipcounter}, inserted: {insertcounter}, sql errors: {sqlerrorcounter}')
 
 
+
 def viewed_before_filler():
-	'''This function fills the viewed_before table in SQL with values from mongoDB
-	Written by: Levi Verhoef'''
+	'''
+	This function fills the viewed_before table in SQL with values from mongoDB
+	Written by: Levi Verhoef
+	'''
 
 	#get documents, filtered by id and recommendations
 	# we do this filter because this function already takes a long time to run so small optimisations are good
@@ -236,119 +249,137 @@ def viewed_before_filler():
 					print(f'hier komen we een sql transactie error tegen, skip')
 					sqlerrorcounter += 1
 					con.rollback() #this rolls back the transaction and makes sure on the next commit we
-								   #wont try to commit the faulty transaction again.
+								#wont try to commit the faulty transaction again.
 	con.commit()
 	cur.close()
 	con.close()
 	print(f'done! skipped:{skipcounter}, inserted: {insertcounter}, sql errors: {sqlerrorcounter}')
 
+
+
 def buid_table_filler():
-    '''This function converts a mongoDB profile entry into an SQL Profile table entry
-		it checks which information is available and inserts it correspondingly
-		Written by: Dennis Besselsen'''
+	'''
+	This function converts a mongoDB profile entry into an SQL Buid table entry
+	it checks which information is available and inserts it correspondingly
+	Written by: Dennis Besselsen
+	'''
 
-    # Hier wordt een filter toegepast op de mongoDB. De enige nuttige informatie voor deze functie is '_id' en 'buids'
-    filterid = {"_id": 1, "buids":1}
-    profileids = MongodbDAO.getCollection("profiles").find({}, filterid, no_cursor_timeout=True)
+	# Hier wordt een filter toegepast op de mongoDB. De enige nuttige informatie voor deze functie is '_id' en 'buids'
+	filterid = {"_id": 1, "buids":1}
+	profileids = MongodbDAO.getCollection("profiles").find({}, filterid, no_cursor_timeout=True)
 
-    # Alle Profiles uit SQL worden ingeladen en in een lijst van strings geplaatst
-    cur.execute("select _id from profile")
-    data = cur.fetchall()
-    usable_profile_id_list = []
-    for entry in data:
-        usable_profile_id_list.append(entry[0])
+	# Alle Profiles uit SQL worden ingeladen en in een lijst van strings geplaatst
+	cur.execute("select _id from profile")
+	data = cur.fetchall()
+	usable_profile_id_list = []
+	for entry in data:
+		usable_profile_id_list.append(entry[0])
 
-    count = 0            # lelijke counter voor het beihouden van aantal succesvolle commits
+	count = 0            # lelijke counter voor het beihouden van aantal succesvolle commits
 
-    #voor elk profiel geladen uit Mongo word gekeken of deze al gebruikt is in de SQL profile table. Zo ja, check of deze een buid heeft, zo ja insert en commit deze informatie 1 voor 1.
-    for profile in profileids:
-        id = str(profile["_id"])
-        try:
-            if "buids" in profile.keys():
-                for buid in profile["buids"]:
-                    try:
-                        cur.execute("INSERT INTO buid (_buid, profile_id) VALUES (%s, %s)", (buid, id))
-                        con.commit()
-                        count += 1
-                        print(count)
-                    except psycopg2.errors.UniqueViolation:  # exception die de duplicate Buids omzeilt.
-                        print(f'Exception used on {id}, {buid}')
-                        con.rollback()
-                    except psycopg2.errors.ForeignKeyViolation:
-                        print('Profile ID does not exist. skipping')
-                        con.rollback()
-        except KeyError:
-            print('geen BUIDS')
-            continue
+	#voor elk profiel geladen uit Mongo word gekeken of deze al gebruikt is in de SQL profile table. Zo ja, check of deze een buid heeft, zo ja insert en commit deze informatie 1 voor 1.
+	for profile in profileids:
+		id = str(profile["_id"])
+		try:
+			if "buids" in profile.keys():
+				for buid in profile["buids"]:
+					try:
+						cur.execute("INSERT INTO buid (_buid, profile_id) VALUES (%s, %s)", (buid, id))
+						con.commit()
+						count += 1
+						print(count)
+					except psycopg2.errors.UniqueViolation:  # exception die de duplicate Buids omzeilt.
+						print(f'Exception used on {id}, {buid}')
+						con.rollback()
+					except psycopg2.errors.ForeignKeyViolation:
+						print('Profile ID does not exist. skipping')
+						con.rollback()
+		except KeyError:
+			print('geen BUIDS')
+			continue
+
 
 
 def session_filler():
-
+	'''
+	This function converts the mongoDB session entry into the SQL 'session' table 
+	it checks which information is available and inserts it correspondingly
+	Written by: Ayoub Zouin en Levi Verhoef
+	'''
+	# counters
 	insert_counter = 0
 	unique_exceptionError_counter = 0
 	ForeignKey_exceptionError_counter = 0
 	buid_Exception_counter = 0
 	failed_sql_counter= 0
 
-
-
+	# loop through all sessions
 	for session in sessions:
-
+		# bunch of try/except to effeciently find what we need
 		try:
-			session_id = str(session["_id"])
+			session_id = str(session["_id"]) # converts sesison id to string
 		except:
 			print('geen id')
 
 		try:
-			session_buid = str(session["buid"])
+			session_buid = str(session["buid"]) # converts session buid to string
 		except:
 			print("Session buid invalid")
 
 		try:
-			sale = session["has_sale"]
+			sale = session["has_sale"] # converts boolean sale to string
 		except:
 			print("Geen sale")
 
 		try:
-			order = session["order"]
-			if order == None:
+			order = session["order"] # converts order to string
+			if order == None: # check if order is empty
 				continue
 		except:
 			print(f'Geen order')
-
-		try:
+		try: # adds session_id, buid_id en whether a sale was made into the table session in the database			 
 			cur.execute('INSERT INTO "session" (_id, buid_buid, has_sale) VALUES (%s, %s, %s)',
 						(session_id, session_buid, sale))
 			insert_counter += 1
 			print(insert_counter)
-			con.commit()
+			con.commit() # commits the insert to the database
 		except psycopg2.errors.UniqueViolation:
 			unique_exceptionError_counter += 1
 			print(f'{unique_exceptionError_counter} Exception used on {session_id}, {session_buid}')
-			con.rollback()
-		except psycopg2.errors.ForeignKeyViolation:
+			con.rollback() # if an error occurs, the selection is skipped and the cursor rolls back
+		except psycopg2.errors.ForeignKeyViolation: #if buid doesn't exist, we skip it
 			ForeignKey_exceptionError_counter += 1
 			print('Buid does not exist. skipping', ForeignKey_exceptionError_counter)
-			con.rollback()
-		except psycopg2.errors.StringDataRightTruncation:
+			con.rollback()															
+		except psycopg2.errors.StringDataRightTruncation: # sometimes this error occurs, since amount is neglibible it gets skipped
 			buid_Exception_counter += 1
 			con.rollback()
-		except psycopg2.errors.InFailedSqlTransaction:
-			failed_sql_counter += 1
+		except psycopg2.errors.InFailedSqlTransaction:							
+			failed_sql_counter += 1	# keeps count of this error. Gets ignored if the amount is negligible (~500 or less)	 										
 			con.rollback()
 	print(f'Done! We inserted {insert_counter} documents, got unique exception: {unique_exceptionError_counter} times')
 	print(f'Got foreign key error {ForeignKey_exceptionError_counter} times, Too long buid error: {buid_Exception_counter} times, and failed {failed_sql_counter} sql queries.')
-def order_filler():
 
-	orderidcounter = 1
+
+
+def order_filler():
+	'''
+	This function converts the mongoDB session entry 'order' into the SQL 'order' table 
+	it checks which information is available and inserts it correspondingly'
+	Written by: Ayoub Zouin en Levi Verhoef
+	'''
+	# counters
+	orderidcounter = 1 # keeps track of orders that aren't empty
+					# it's also used as reference for the orderid
 	unique_exceptionError_counter = 0
 	ForeignKey_exceptionError_counter = 0
 	buid_Exception_counter = 0
 	failed_sql_counter= 0
 
+	# loop door alle sessions heen
 	for session in sessions:
 
-		if "order" not in session.keys():
+		if "order" not in session.keys(): # check whether order exists
 			continue
 
 		try:
@@ -363,7 +394,7 @@ def order_filler():
 		except:
 			print(f'Geen order')
 
-		try:
+		try: # adds orderid and session_id to the order table in the database
 			print(f'inserting: {orderidcounter} and session id: {session_id}')
 			orderidcounter += 1
 			cur.execute('INSERT INTO "order" (orderid, session_id) VALUES (%s, %s)',
@@ -385,12 +416,13 @@ def order_filler():
 	print(f'Done! We inserted {orderidcounter} documents, got unique exception: {unique_exceptionError_counter} times')
 	print(f'Got foreign key error {ForeignKey_exceptionError_counter} times, Too long buid error: {buid_Exception_counter} times, and failed {failed_sql_counter} sql queries.')
 
-def product_order_filler():
-	'''This function fills the viewed_before table in SQL with values from mongoDB
-		Written by: Levi Verhoef'''
 
-	# get documents, filtered by id and recommendations
-	# we do this filter because this function already takes a long time to run so small optimisations are good
+
+def product_order_filler():
+	'''
+	This function fills the product_order table in SQL with values from mongoDB
+	Written by: Ayoub Zouin en Levi Verhoef
+	'''
 
 	# a few counters
 	skipcounter = 0
@@ -413,19 +445,19 @@ def product_order_filler():
 		except:
 			print(f'Geen order')
 
-		selectquery = 'SELECT orderid FROM "order" where session_id = %s'
+		selectquery = 'SELECT orderid FROM "order" where session_id = %s' # finds session_id in database and grabs the corrosponding orderid
 		try:
 			cur.execute(selectquery, (session_id,))
 			orderselection = cur.fetchone()
 		except:
 			print(f'hier komen we een sql transactie error tegen, skip')
 			sqlerrorcounter += 1
-			con.rollback()  # this rolls back the transaction and makes sure on the next commit we
+			con.rollback()  # this rolls back the transaction and makes sure on the next commit we commit the right selection
 			continue
 
 		try:
 			for product_id in session["order"]["products"]:
-				try:
+				try: #adds product_order_id, product_id and orderorderid into the table product_order in the database	
 					print(f'inserting product_order_id:{product_order_id_counter} order_id: {orderselection[0]} and productid: {product_id["id"]} ')
 					cur.execute(
 						"INSERT INTO product_order (product_order_id, product_id, orderorderid) VALUES (%s, %s, %s)",
