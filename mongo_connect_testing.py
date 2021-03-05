@@ -31,22 +31,23 @@ def profile_converter():
 			if "count" in profile["order"].keys():
 				if "recommendations" in profile.keys():
 					try:
-						print("1")
-						cur.execute("INSERT INTO profile (_id, ordercount, segment) VALUES (%s, %s, %s)", (profile_id, profile["order"]["count"], profile["recommendations"]["segment"]))
+						cur.execute("INSERT INTO profile (_id, ordercount, segment) VALUES (%s, %s, %s)",
+							(profile_id, profile["order"]["count"], profile["recommendations"]["segment"]))
 					except Exception as e:
-						print('1 ', e)
+						print(e)
 				else:
 					try:
-						cur.execute("INSERT INTO profile (_id, ordercount) VALUES (%s, %s)", (profile_id, profile["order"]["count"]))
+						cur.execute("INSERT INTO profile (_id, ordercount) VALUES (%s, %s)", 
+														(profile_id, profile["order"]["count"]))
 					except Exception as e:
-						print('2 ', e)
+						print(e)
 			else:
 				if "recommendations" in profile.keys():
 					try:
 						cur.execute("INSERT INTO profile (_id, segment) VALUES (%s, %s)",
 									(profile_id, profile["recommendations"]["segment"]))
 					except Exception as e:
-						print('3 ', e)
+						print(e)
 				else:
 					continue
 		else:
@@ -55,7 +56,7 @@ def profile_converter():
 					cur.execute("INSERT INTO profile (_id, segment) VALUES (%s, %s)",
 								(profile_id, profile["recommendations"]["segment"]))
 				except Exception as e:
-					print('4 ', e)
+					print(e)
 			else:
 				continue
 
@@ -74,7 +75,8 @@ def session_insert():
 		if session["buid"] in buid_list:
 			if sale == True:
 				try:
-					cur.execute("INSERT INTO session (_id, buid_buid, has_sale) VALUES (%s, %s, %s)", (session_id, session_buid, sale))
+					cur.execute("INSERT INTO session (_id, buid_buid, has_sale) VALUES (%s, %s, %s)", 
+																	(session_id, session_buid, sale))
 				except Exception as e:
 					print(e)
 			else:
@@ -100,8 +102,8 @@ def order_insert():
 				if "order" in session.keys() and session["order"] != None:
 					count+=1					
 					try:
-						cur.execute('INSERT INTO "order"(orderid, session_id) VALUES \
-													(%s, %s)', (count, session_id))
+						cur.execute('INSERT INTO "order"(orderid, session_id) VALUES (%s, %s)', 
+																			(count, session_id))
 					except Exception as e:
 						print(e)
 				else:
