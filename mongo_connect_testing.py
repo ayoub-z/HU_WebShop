@@ -179,6 +179,40 @@ def previously_recommended_filler():
 	con.close()
 	print(f'done! skipped:{skipcounter}, inserted: {insertcounter}, sql errors: {sqlerrorcounter}')
 
-previously_recommended_filler()
-# def viewed_before_filler():
 
+def viewed_before_filler():
+	filterprev = {"_id": 1, "recommendations":1}
+	profiles_with_recommendations = MongodbDAO.getCollection("profiles").find({}, filterprev, no_cursor_timeout=True)
+	skipcounter = 0
+	insertcounter = 0
+	private_key_counter = 1
+	sqlerrorcounter = 0
+	
+	for profile in profiles_with_recommendations:
+		id = str(profile["_id"])
+		if "recommendations" not in profile.keys():
+			continue
+		if "viewed_before" not in profile["recommendations"]:
+			continue
+		else:
+			for viewedproduct in profile["recommendations"]["viewed_before"]:
+				try:
+					print(f'inserting profile_id: {profile["_id"]}, reccomendation: {viewedproduct}')
+					cur.execute(
+						"INSERT INTO viewed_before (viewed_before_id, profile_id, product_id) VALUES (%s, %s, %s)",
+						(private_key_counter, id, viewedproduct))
+					con.commit()
+					insertcounter += 1
+					private_key_counter += 1
+				except psycopg2.errors.ForeignKeyViolation:
+					print(f'product id:{viewedproduct} niet nuttig, skip')
+					skipcounter += 1
+					continue
+				except psycopg2.errors.InFailedSqlTransaction:
+					print(f'hier komen we een sql transactie error tegen, skip')
+					sqlerrorcounter += 1
+					con.rollback()
+	con.commit()
+	cur.close()
+	con.close()
+	print(f'done! skipped:{skipcounter}, inserted: {insertcounter}, sql errors: {sqlerrorcounter}')
