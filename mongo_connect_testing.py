@@ -82,17 +82,23 @@ def buidtablebuilder():
     #voor elk profiel geladen uit Mongo word gekeken of deze al gebruikt is in de SQL profile table. Zo ja, check of deze een buid heeft, zo ja insert en commit deze informatie 1 voor 1.
     for profile in profileids:
         id = str(profile["_id"])
-        if id in usable_profile_id_list:
+        try:
             if "buids" in profile.keys():
                 for buid in profile["buids"]:
                     try:
                         cur.execute("INSERT INTO buid (_buid, profile_id) VALUES (%s, %s)", (buid, id))
                         con.commit()
-                        count +=1
+                        count += 1
                         print(count)
-                    except psycopg2.errors.UniqueViolation:      #exception die de duplicate Buids omzeilt.
+                    except psycopg2.errors.UniqueViolation:  # exception die de duplicate Buids omzeilt.
                         print(f'Exception used on {id}, {buid}')
                         con.rollback()
+                    except psycopg2.errors.ForeignKeyViolation:
+                        print('Profile ID does not exist. skipping')
+                        con.rollback()
+        except KeyError:
+            print('geen BUIDS')
+            continue
 
 
 buidtablebuilder()
