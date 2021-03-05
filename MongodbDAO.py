@@ -8,5 +8,5 @@ def getCollection(collectionName):
 	'''Get a collection from the mongodb huwebshop'''
 	return getMongoDB().get_collection(collectionName)
 
-def getDocuments(collectionName, filter = {}):
-	return getCollection(collectionName).find(filter)
+def getDocuments(collectionName, filter={}):
+	return getCollection(collectionName).find(filter, no_cursor_timeout=True)
