@@ -474,9 +474,11 @@ def product_order_filler():
 					sqlerrorcounter += 1
 					con.rollback()  # this rolls back the transaction and makes sure on the next commit we
 									#wont try to commit the faulty transaction again.
+				except:
+					print('kaputski')
 
 		except KeyError:
 			print('geen order')
 	print(f'Done! we inserted {insertcounter} product/orders, we skipped {skipcounter} items, we got {sqlerrorcounter} sql errors. All good!')
-product_converter()
+session_filler()
 con.commit()
