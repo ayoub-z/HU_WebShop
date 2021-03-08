@@ -478,3 +478,5 @@ def product_order_filler():
 		except KeyError:
 			print('geen order')
 	print(f'Done! we inserted {insertcounter} product/orders, we skipped {skipcounter} items, we got {sqlerrorcounter} sql errors. All good!')
+product_converter()
+con.commit()
