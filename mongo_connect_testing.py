@@ -322,7 +322,7 @@ def session_filler():
 			print('geen id')
 
 		try:
-			session_buid = str(session["buid"]) # converts session buid to string
+			session_buid = str(session["buid"][0]) # converts session buid to string
 		except:
 			print("Session buid invalid")
 
