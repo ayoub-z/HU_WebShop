@@ -9,11 +9,35 @@ cur = con.cursor()
 #Example product id for testing purposes
 productid = 16202
 
+def available_columns(productid):
+    '''This function will return a List filled with strings of available columns in the given ProductID.
+    If the list contains less than two entries, return None.'''
 
-def get_similar_product(productid):
+    available_list=[]
+
+    productid = str(productid)
+    cur.execute("SELECT * FROM product WHERE product._id = %s", (productid,))
+    product_id_data = cur.fetchone()
+
+    if product_id_data[category] != None:
+        available_list.append("category")
+    if product_id_data[sub_category] != None:
+        available_list.append("sub_category")
+    if product_id_data[doelgroep] != None:
+        available_list.append("doelgroep")
+    if product_id_data[brand] != None:
+        available_list.append("brand")
+    if product_id_data[sub_sub_category] != None:
+        available_list.append("sub_sub_category")
+    if len(available_list) < 2:
+        return None
+    return available_list
+
+
+def get_similar_product(productid,available_list):
     '''
-    Function that takes a product_ID & returns 4 product_id's of products with similiar properties.
-    When atleast 4 products are found, Returns 4 product_ID's
+    Function that takes a product_ID & available_list
+
     '''
     id = 0
     naam = 1
