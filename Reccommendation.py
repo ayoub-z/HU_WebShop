@@ -11,10 +11,15 @@ productid = 16202
 
 def available_product_columns(productid):
     '''This function will return a List filled with strings of available columns in the given ProductID.
+    The columns that will get checked are: Category, brand, sub_category, sub_sub_category, sub_sub_sub_category
     If the list contains less than two entries, return None.'''
+
+    #Bunch of variables, only used for indexing
+    id, naam, brand, category,description,fast_mover,herhaalaankopen,selling_price,doelgroep,sub_category,sub_sub_category,sub_sub_sub_category=0,1,2,3,4,5,6,7,8,9,10,11
 
     prod_prop_list=[]
 
+    #Fetch product from PostgreSQL
     productid = str(productid)
     cur.execute("SELECT * FROM product WHERE product._id = %s", (productid,))
     product_id_data = cur.fetchone()
@@ -29,9 +34,11 @@ def available_product_columns(productid):
         prod_prop_list.append("brand")
     if product_id_data[sub_sub_category] != None:
         prod_prop_list.append("sub_sub_category")
-    if len(prod_prop_list) < 2:
+    if len(prod_prop_list) < 2:     #If length of list > 2, I won't use it
         return None
     return prod_prop_list
+
+def table_check():
 
 
 def get_similar_product(productid,prod_prop_list):
@@ -80,4 +87,4 @@ def get_similar_product(productid,prod_prop_list):
         print(f'id:{row[id]} | name:{row[naam]} | fm:{row[fast_mover]} | dg: {row[doelgroep]} | cg: {row[category]} | sub: {row[sub_category]} | subsub: {row[sub_sub_category]} ')
 
 
-available_product_columns(productid)
+print(available_product_columns(productid))
