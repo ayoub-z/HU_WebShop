@@ -1,6 +1,6 @@
 import psycopg2
 from more_itertools import powerset #import die gebruikt wordt om een powerset te maken
-
+import random
 
 #connection to PostgreSQL
 con = psycopg2.connect('host=localhost dbname=hu_webshop user=postgres password=123')
@@ -52,7 +52,7 @@ def tablemaker():
         SQL_skeerie = "Create table "
         for filter in set:
             SQL_skeerie += filter
-        SQL_skeerie += " ( id INT NOT NULL  PRIMARY KEY, productid varchar(255) NOT NULL, reco1 varchar(255), reco2 varchar(255), reco3 varchar(255), reco4 varchar(255) );"
+        SQL_skeerie += " (productid varchar(255) NOT NULL PRIMARY KEY, reco1 varchar(255), reco2 varchar(255), reco3 varchar(255), reco4 varchar(255) );"
         cur.execute(SQL_skeerie)
         print(SQL_skeerie)
     con.commit()
@@ -61,6 +61,39 @@ def table_elimination():
     '''function to cascade drop delete eliminate destroy tables made in function tablemaker'''
     cur.execute("DROP TABLE IF EXISTS brandsub_category ; DROP TABLE IF EXISTS brandsub_categorysub_sub_category CASCADE;  DROP TABLE IF EXISTS categorybrand CASCADE;  DROP TABLE IF EXISTS categorybrandsub_category CASCADE; DROP TABLE IF EXISTS categorybrandsub_categorysub_sub_category CASCADE; DROP TABLE IF EXISTS categorybrandsub_sub_category CASCADE;DROP TABLE IF EXISTS categorysub_category CASCADE; DROP TABLE IF EXISTS categorysub_categorysub_sub_category CASCADE; DROP TABLE IF EXISTS categorysub_sub_category CASCADE; DROP TABLE IF EXISTS sub_categorysub_sub_category CASCADE;  DROP TABLE IF EXISTS brandsub_sub_category CASCADE;")
     con.commit()
+
+def producttable_filler():
+    '''Function that loops though all products and fills the tables according to what details are known about the product.'''
+    # Bunch of variables, only used for indexing
+    id, naam, brand, category, description, fast_mover, herhaalaankopen, selling_price, doelgroep, sub_category, sub_sub_category, sub_sub_sub_category = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+
+    cur.execute("SELECT * FROM product")
+    producten = cur.fetchall()
+    for product in producten:
+            #brandsub_catergory
+            try:
+                filtertuple =  (product[brand],product[sub_category],product[id])
+                cur.execute("SELECT _id FROM product WHERE brand = %s AND sub_category = %s AND NOT _id = %s", (filtertuple))
+                similiar_prod_list = cur.fetchall()
+            except psycopg2.errors.InFailedSqlTransaction:
+                print(f' SQL error @ {product[id]}')
+          # This try & except picks 4 random entries from the similiar_prod_list, and inserts them into the corresponding table
+            try:
+                four_prod = random.sample(similiar_prod_list, 4)
+            except:
+                continue
+            inserttuple=[product[id],]
+            for prod in four_prod:
+                inserttuple.append(prod[0])
+            inserttuple= tuple(inserttuple)
+            try:
+            cur.execute('INSERT INTO "brandsub_category" (productid, reco1, reco2, reco3, reco4) VALUES (%s, %s, %s, %s, %s)', inserttuple)
+            con.commit()
+            print("succes mattie")
+            except psycopg2.errors.UniqueViolation:
+                uniquevio=0
+
+
 def get_similar_product(productid,prod_prop_list):
     '''
     Function that takes a product_ID & prod_prop_list
@@ -106,6 +139,6 @@ def get_similar_product(productid,prod_prop_list):
     for row in similar_products_data:
         print(f'id:{row[id]} | name:{row[naam]} | fm:{row[fast_mover]} | dg: {row[doelgroep]} | cg: {row[category]} | sub: {row[sub_category]} | subsub: {row[sub_sub_category]} ')
 
+producttable_filler()
+con.commit()
 
-
-table_elimination()
