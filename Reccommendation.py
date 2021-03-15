@@ -71,13 +71,15 @@ def producttable_filler():
     producten = cur.fetchall()
     for product in producten:
             #brandsub_catergory
+            #try to select all _id with similiar brand and sub_category
             try:
                 filtertuple =  (product[brand],product[sub_category],product[id])
                 cur.execute("SELECT _id FROM product WHERE brand = %s AND sub_category = %s AND NOT _id = %s", (filtertuple))
                 similiar_prod_list = cur.fetchall()
             except psycopg2.errors.InFailedSqlTransaction:
+                con.rollback()
                 print(f' SQL error @ {product[id]}')
-          # This try & except picks 4 random entries from the similiar_prod_list, and inserts them into the corresponding table
+            # This try & except picks 4 random entries from the similiar_prod_list, and inserts them into the corresponding table. If there's an error, continue to the next product
             try:
                 four_prod = random.sample(similiar_prod_list, 4)
             except:
