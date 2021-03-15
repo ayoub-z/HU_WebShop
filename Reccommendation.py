@@ -62,16 +62,17 @@ def table_elimination():
     cur.execute("DROP TABLE IF EXISTS brandsub_category ; DROP TABLE IF EXISTS brandsub_categorysub_sub_category CASCADE;  DROP TABLE IF EXISTS categorybrand CASCADE;  DROP TABLE IF EXISTS categorybrandsub_category CASCADE; DROP TABLE IF EXISTS categorybrandsub_categorysub_sub_category CASCADE; DROP TABLE IF EXISTS categorybrandsub_sub_category CASCADE;DROP TABLE IF EXISTS categorysub_category CASCADE; DROP TABLE IF EXISTS categorysub_categorysub_sub_category CASCADE; DROP TABLE IF EXISTS categorysub_sub_category CASCADE; DROP TABLE IF EXISTS sub_categorysub_sub_category CASCADE;  DROP TABLE IF EXISTS brandsub_sub_category CASCADE;")
     con.commit()
 
-def producttable_filler():
+def brandsub_filler():
     '''Function that loops though all products and fills the tables according to what details are known about the product.'''
     # Bunch of variables, only used for indexing
     id, naam, brand, category, description, fast_mover, herhaalaankopen, selling_price, doelgroep, sub_category, sub_sub_category, sub_sub_sub_category = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
 
+    #select all products, and start looping through the products
     cur.execute("SELECT * FROM product")
     producten = cur.fetchall()
     for product in producten:
             #brandsub_catergory
-            #try to select all _id with similiar brand and sub_category
+            #try to select all _id with similiar brand and sub_category. If there's a SQL transaction error, roll back cursor and continue to next product.
             try:
                 filtertuple =  (product[brand],product[sub_category],product[id])
                 cur.execute("SELECT _id FROM product WHERE brand = %s AND sub_category = %s AND NOT _id = %s", (filtertuple))
@@ -79,11 +80,13 @@ def producttable_filler():
             except psycopg2.errors.InFailedSqlTransaction:
                 con.rollback()
                 print(f' SQL error @ {product[id]}')
+                continue
             # This try & except picks 4 random entries from the similiar_prod_list, and inserts them into the corresponding table. If there's an error, continue to the next product
             try:
                 four_prod = random.sample(similiar_prod_list, 4)
             except:
                 continue
+            #The remainder of this function is made to insert the propper data into postgreSQL
             inserttuple=[product[id],]
             for prod in four_prod:
                 inserttuple.append(prod[0])
@@ -91,55 +94,10 @@ def producttable_filler():
             try:
                 cur.execute('INSERT INTO "brandsub_category" (productid, reco1, reco2, reco3, reco4) VALUES (%s, %s, %s, %s, %s)', inserttuple)
                 con.commit()
-                print("succes mattie")
-            except:
-                uniquevio=0
+                print(f' succes met {product[id]}')
+            except Exception as e:
+                print(e)
 
-
-def get_similar_product(productid,prod_prop_list):
-    '''
-    Function that takes a product_ID & prod_prop_list
-
-    '''
-    id = 0
-    naam = 1
-    brand = 2
-    category = 3
-    description = 4
-    fast_mover = 5
-    herhaalaankopen = 6
-    selling_price = 7
-    doelgroep = 8
-    sub_category = 9
-    sub_sub_category = 10
-    sub_sub_sub_category = 11
-
-    productid = str(productid)
-    cur.execute("SELECT * FROM product WHERE product._id = %s",(productid,))
-    product_id_data = cur.fetchone()
-
-    sqlquery = "SELECT * FROM product where category = %s"
-    filtertuple = [product_id_data[category]]
-
-    if product_id_data[sub_category] != None:
-        sqlquery += " and sub_category = %s "
-        filtertuple.append(product_id_data[sub_category])
-    if product_id_data[doelgroep] != None:
-        sqlquery += "and doelgroep = %s "
-        filtertuple.append(product_id_data[doelgroep])
-    if product_id_data[brand] != None:
-        sqlquery += "and brand = %s "
-        filtertuple.append(product_id_data[brand])
-    if product_id_data[sub_sub_category] != None:
-        sqlquery += "and sub_sub_category = %s "
-        filtertuple.append(product_id_data[sub_sub_category])
-
-    filtertuple = tuple(filtertuple)
-
-    cur.execute(sqlquery,filtertuple)
-    similar_products_data = cur.fetchall()
-    for row in similar_products_data:
-        print(f'id:{row[id]} | name:{row[naam]} | fm:{row[fast_mover]} | dg: {row[doelgroep]} | cg: {row[category]} | sub: {row[sub_category]} | subsub: {row[sub_sub_category]} ')
 
 producttable_filler()
 con.commit()
