@@ -40,7 +40,7 @@ def available_product_columns(productid):
         return None
     return prod_prop_list
 
-def tablemaker():
+def prod_tablemaker():
     '''Function that creates PostgreSQL tables, based on sets that contain atleast 2 objects, for products in PostgreSQL'''
 
     all_filter_column= ['category', 'brand', 'sub_category', 'sub_sub_category']                  # List containing all columns in products, used for making recommendations
@@ -98,7 +98,42 @@ def brandsub_filler():
             except Exception as e:
                 print(e)
 
+def categorybrandsub_categorysub_sub_category_filler():
+    '''Function that loops though all products and fills the tables according to what details are known about the product.'''
+    # Bunch of variables, only used for indexing
+    id, naam, brand, category, description, fast_mover, herhaalaankopen, selling_price, doelgroep, sub_category, sub_sub_category, sub_sub_sub_category = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
 
-producttable_filler()
-con.commit()
+    #select all products, and start looping through the products
+    cur.execute("SELECT * FROM product")
+    producten = cur.fetchall()
+    for product in producten:
+            #categorybrandsub_categorysub_sub_category
+            #try to select all _id with similiar category, brand, sub_category, sub_sub_category. If there's a SQL transaction error, roll back cursor and continue to next product.
+            try:
+                filtertuple =  (product[brand],product[sub_category],product[sub_sub_category], product[category],product[id])
+                cur.execute("SELECT _id FROM product WHERE brand = %s AND sub_category = %s AND sub_sub_category = %s AND category = %s AND NOT _id = %s", (filtertuple))
+                similiar_prod_list = cur.fetchall()
+            except psycopg2.errors.InFailedSqlTransaction:
+                con.rollback()
+                print(f' SQL error @ {product[id]}')
+                continue
+            # This try & except picks 4 random entries from the similiar_prod_list, and inserts them into the corresponding table. If there's an error, continue to the next product
+            try:
+                four_prod = random.sample(similiar_prod_list, 4)
+            except:
+                continue
+            #The remainder of this function is made to insert the propper data into postgreSQL
+            inserttuple=[product[id],]
+            for prod in four_prod:
+                inserttuple.append(prod[0])
+            inserttuple= tuple(inserttuple)
+            try:
+                cur.execute('INSERT INTO "categorybrandsub_categorysub_sub_category" (productid, reco1, reco2, reco3, reco4) VALUES (%s, %s, %s, %s, %s)', inserttuple)
+                con.commit()
+                print(f' succes met {product[id]}')
+            except Exception as e:
+                print(e)
+
+def
+
 
