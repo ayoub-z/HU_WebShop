@@ -87,10 +87,10 @@ def producttable_filler():
                 inserttuple.append(prod[0])
             inserttuple= tuple(inserttuple)
             try:
-            cur.execute('INSERT INTO "brandsub_category" (productid, reco1, reco2, reco3, reco4) VALUES (%s, %s, %s, %s, %s)', inserttuple)
-            con.commit()
-            print("succes mattie")
-            except psycopg2.errors.UniqueViolation:
+                cur.execute('INSERT INTO "brandsub_category" (productid, reco1, reco2, reco3, reco4) VALUES (%s, %s, %s, %s, %s)', inserttuple)
+                con.commit()
+                print("succes mattie")
+            except:
                 uniquevio=0
 
 
