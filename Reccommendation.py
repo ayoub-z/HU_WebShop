@@ -40,7 +40,7 @@ def available_product_columns(productid):
         return None
     return prod_prop_list
 
-def prod_tablemaker():
+def tablemaker():
     '''Function that creates PostgreSQL tables, based on sets that contain atleast 2 objects, for products in PostgreSQL'''
 
     all_filter_column= ['category', 'brand', 'sub_category', 'sub_sub_category']                  # List containing all columns in products, used for making recommendations
